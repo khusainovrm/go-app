@@ -18,6 +18,14 @@ func NewUserHandler(db *gorm.DB) *UserHandler {
 }
 
 // GetUsers получает всех пользователей
+// @Summary      Получить всех пользователей
+// @Description  Возвращает список всех пользователей
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  models.Response{data=[]models.User}
+// @Failure      500  {object}  models.ErrorResponse
+// @Router       /users [get]
 func (h *UserHandler) GetUsers(c *gin.Context) {
 	var users []models.User
 
@@ -38,6 +46,17 @@ func (h *UserHandler) GetUsers(c *gin.Context) {
 }
 
 // GetUser получает пользователя по ID
+// @Summary      Получить пользователя по ID
+// @Description  Возвращает пользователя по указанному ID
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "User ID"
+// @Success      200  {object}  models.Response{data=models.User}
+// @Failure      400  {object}  models.ErrorResponse
+// @Failure      404  {object}  models.ErrorResponse
+// @Failure      500  {object}  models.ErrorResponse
+// @Router       /users/{id} [get]
 func (h *UserHandler) GetUser(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -74,16 +93,32 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 }
 
 // CreateUser создает нового пользователя
+// @Summary      Создать нового пользователя
+// @Description  Создает нового пользователя с указанными данными
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        user  body      models.CreateUserRequest  true  "User data"
+// @Success      201   {object}  models.Response{data=models.User}
+// @Failure      400   {object}  models.ErrorResponse
+// @Failure      500   {object}  models.ErrorResponse
+// @Router       /users [post]
 func (h *UserHandler) CreateUser(c *gin.Context) {
-	var user models.User
+	var req models.CreateUserRequest
 
-	if err := c.ShouldBindJSON(&user); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{
 			Success: false,
 			Message: "Invalid request body",
 			Error:   err.Error(),
 		})
 		return
+	}
+
+	user := models.User{
+		Name:  req.Name,
+		Email: req.Email,
+		Age:   req.Age,
 	}
 
 	if err := h.db.Create(&user).Error; err != nil {
@@ -103,6 +138,18 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 }
 
 // UpdateUser обновляет пользователя
+// @Summary      Обновить пользователя
+// @Description  Обновляет данные пользователя по указанному ID
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        id    path      int                        true  "User ID"
+// @Param        user  body      models.UpdateUserRequest   true  "Updated user data"
+// @Success      200   {object}  models.Response{data=models.User}
+// @Failure      400   {object}  models.ErrorResponse
+// @Failure      404   {object}  models.ErrorResponse
+// @Failure      500   {object}  models.ErrorResponse
+// @Router       /users/{id} [put]
 func (h *UserHandler) UpdateUser(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -131,13 +178,25 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	if err := c.ShouldBindJSON(&user); err != nil {
+	var req models.UpdateUserRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{
 			Success: false,
 			Message: "Invalid request body",
 			Error:   err.Error(),
 		})
 		return
+	}
+
+	// Обновляем только переданные поля
+	if req.Name != "" {
+		user.Name = req.Name
+	}
+	if req.Email != "" {
+		user.Email = req.Email
+	}
+	if req.Age != 0 {
+		user.Age = req.Age
 	}
 
 	if err := h.db.Save(&user).Error; err != nil {
@@ -157,6 +216,16 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 }
 
 // DeleteUser удаляет пользователя
+// @Summary      Удалить пользователя
+// @Description  Удаляет пользователя по указанному ID
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "User ID"
+// @Success      200  {object}  models.Response
+// @Failure      400  {object}  models.ErrorResponse
+// @Failure      500  {object}  models.ErrorResponse
+// @Router       /users/{id} [delete]
 func (h *UserHandler) DeleteUser(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {

@@ -5,14 +5,22 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go-app/handlers"
+	"go-app/models"
 )
 
 func SetupRoutes(r *gin.Engine, userHandler *handlers.UserHandler) {
 	// Health check
+	// @Summary      Health Check
+	// @Description  Проверка состояния сервера
+	// @Tags         health
+	// @Accept       json
+	// @Produce      json
+	// @Success      200  {object}  models.HealthResponse
+	// @Router       /health [get]
 	r.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status":  "ok",
-			"message": "Server is running",
+		c.JSON(http.StatusOK, models.HealthResponse{
+			Status:  "ok",
+			Message: "Server is running",
 		})
 	})
 
