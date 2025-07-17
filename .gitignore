@@ -25,3 +25,27 @@ go.work.sum
 # env file
 .env
 
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+
+# Database
+*.db
+*.sqlite
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+
